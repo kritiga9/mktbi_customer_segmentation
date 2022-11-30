@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-client = Client(url, key) 
+client = Client(st.secrets.url, st.secrets.key) 
 
 @st.experimental_memo(ttl=7200)
 def read_df(table_id, index_col=None, date_col=None):
