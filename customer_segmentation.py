@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import streamlit_keboola_api.src.keboola_api as kb
+import keboola_api as kb
 import os
 from io import StringIO
 from kbcstorage.client import Client
