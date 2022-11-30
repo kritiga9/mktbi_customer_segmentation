@@ -9,9 +9,8 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import cred
 
-client = Client(cred.url, cred.key) 
+client = Client(url, key) 
 
 @st.experimental_memo(ttl=7200)
 def read_df(table_id, index_col=None, date_col=None):
