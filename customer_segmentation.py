@@ -151,7 +151,9 @@ with st.expander("Existing segments"):
     grid_table_1 = AgGrid(segments,gridOptions=gridoptions,
                         update_mode= GridUpdateMode.VALUE_CHANGED | GridUpdateMode.SELECTION_CHANGED,
                         height = 100,
-                        allow_unsafe_jscode=True
+                        allow_unsafe_jscode=True,
+                        enable_enterprise_modules=False
+
     )
     sel_row_1 = pd.DataFrame(grid_table_1["selected_rows"])
     if sel_row_1.size:
@@ -183,7 +185,8 @@ with st.expander("New segment"):
     grid_table = AgGrid(segments_new,gridOptions=gridoptions,
                         update_mode= GridUpdateMode.VALUE_CHANGED | GridUpdateMode.SELECTION_CHANGED,
                         height = 100,
-                        allow_unsafe_jscode=True
+                        allow_unsafe_jscode=True,
+                        enable_enterprise_modules=False
     )
 
     sel_row = pd.DataFrame(grid_table["selected_rows"])
