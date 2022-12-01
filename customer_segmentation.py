@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+st.image('logo.png', width=400)
+
 client = Client(st.secrets.url, st.secrets.key) 
 
 @st.experimental_memo(ttl=7200)
@@ -46,11 +48,6 @@ def segment_f(row,segments):
 
 
 
-st.header("Customer Segmentator")
-col_1,col_2,col_3,col_4 = st.columns(4)    
-
-st.subheader("Overview of Segments")
-
 df_customers = read_df('in.c-wine.customers')
 df_orders = read_df('in.c-wine.wine_orders', date_col=["order_date"])
 segments = read_df_segment("out.c-create_segments.segments")
@@ -58,12 +55,15 @@ df_customers.rename(columns={"days_since_last_purchase":"recency","average_order
 # Create Lables for Each RFM Metric:Create generator of values for labels with range function
 df_customers["General_Segment"] = df_customers.apply(lambda x : segment_f(x, segments=segments),axis=1)
 
+
+st.header("Customer Segmentator")
+col_1,col_2,col_3,col_4 = st.columns(4)    
 col_1.metric("Total Customers", df_customers.shape[0])
 col_2.metric("Average Order Value", f"${df_customers.order_val.mean():.0f}")
 col_3.metric("Average Number of Orders", f"{df_customers.n_purchases.mean():.0f}")
 col_4.metric("Average days between Orders", f"{df_customers.recency.mean():.0f}")
 
-
+st.subheader("Overview of Segments")
 summary = df_customers.groupby('General_Segment').agg({
 'recency':'mean',
 'order_val' :'mean',
@@ -73,8 +73,7 @@ summary.columns = summary.columns.map('_'.join)
 summary = summary.reset_index()
 st.dataframe(summary)
 
-color_dict = {"Lost Sheep" : "red","Need Attention":"orange","Potentially Loyal":"blue","Loyal":"light green","MVC":"green"}
-#ax.scatter(data = df_customers, x = "recency",y = "n_purchases")
+#color_dict = {"Lost Sheep" : "red","Need Attention":"orange","Potentially Loyal":"blue","Loyal":"light green","MVC":"green"}
 fig = sns.relplot(data=df_customers, x='recency', y='n_purchases', hue='General_Segment', height=8.27, aspect=11.7/8.27)
 sns.move_legend(fig, "upper right")
 st.pyplot(fig)
