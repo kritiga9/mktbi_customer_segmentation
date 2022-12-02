@@ -54,8 +54,8 @@ df_customers.rename(columns={"days_since_last_purchase":"recency","average_order
 # Create Lables for Each RFM Metric:Create generator of values for labels with range function
 df_customers["General_Segment"] = df_customers.apply(lambda x : segment_f(x, segments=segments),axis=1)
 
-
-st.header("Customer Segmentator")
+main_header = '<p style="font-family:sans-serif; color:#121212; font-size: 36px;">Customer Segmentator</p>'
+st.markdown(main_header, unsafe_allow_html=True)
 st.markdown("#")
 col_1,col_2,col_3,col_4 = st.columns(4)    
 col_1.metric("Total Customers", df_customers.shape[0])
@@ -64,7 +64,8 @@ col_3.metric("Average Number of Orders", f"{df_customers.n_purchases.mean():.0f}
 col_4.metric("Average days between Orders", f"{df_customers.recency.mean():.0f}")
 st.markdown("#")
 
-st.subheader("Overview of Segments")
+subheader_1 = '<p style="font-family:sans-serif; color:#1f1f1f; font-size: 28px;">Overview of Segments</p>'
+st.markdown(subheader_1, unsafe_allow_html=True)
 summary = df_customers.groupby('General_Segment').agg({
 'recency':'mean',
 'order_val' :'mean',
@@ -81,7 +82,8 @@ fig = sns.relplot(data=df_customers, x='recency', y='n_purchases', hue='General_
 sns.move_legend(fig, "upper right")
 st.pyplot(fig)
 
-st.subheader("Playground")
+subheader_2 = '<p style="font-family:sans-serif; color:#1f1f1f; font-size: 28px;">Playground</p>'
+st.markdown(subheader_2, unsafe_allow_html=True)
 st.markdown("#")
 col6,col7,col8 = st.columns(3)
 st.markdown("#")
@@ -92,7 +94,8 @@ col4,col5 = st.columns(2)
 customers, orders = st.tabs(["Customers", "Orders"])
 st.markdown("#")
 
-st.subheader("Evaluate Segments")
+subheader_3 = '<p style="font-family:sans-serif; color:#1f1f1f; font-size: 28px;">Evaluate Segments</p>'
+st.markdown(subheader_3, unsafe_allow_html=True)
 with col6:
     n_past_purchases_low, n_past_purchases_high = st.slider(
             'Number of orders',
