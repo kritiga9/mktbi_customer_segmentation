@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-st.image('logo.png', width=400)
 
 client = Client(st.secrets.url, st.secrets.key) 
 
@@ -57,11 +56,13 @@ df_customers["General_Segment"] = df_customers.apply(lambda x : segment_f(x, seg
 
 
 st.header("Customer Segmentator")
+st.markdown("#")
 col_1,col_2,col_3,col_4 = st.columns(4)    
 col_1.metric("Total Customers", df_customers.shape[0])
 col_2.metric("Average Order Value", f"${df_customers.order_val.mean():.0f}")
 col_3.metric("Average Number of Orders", f"{df_customers.n_purchases.mean():.0f}")
 col_4.metric("Average days between Orders", f"{df_customers.recency.mean():.0f}")
+st.markdown("#")
 
 st.subheader("Overview of Segments")
 summary = df_customers.groupby('General_Segment').agg({
@@ -72,6 +73,8 @@ summary = df_customers.groupby('General_Segment').agg({
 summary.columns = summary.columns.map('_'.join)
 summary = summary.reset_index()
 st.dataframe(summary)
+st.markdown("#")
+
 
 #color_dict = {"Lost Sheep" : "red","Need Attention":"orange","Potentially Loyal":"blue","Loyal":"light green","MVC":"green"}
 fig = sns.relplot(data=df_customers, x='recency', y='n_purchases', hue='General_Segment', height=8.27, aspect=11.7/8.27)
@@ -79,11 +82,15 @@ sns.move_legend(fig, "upper right")
 st.pyplot(fig)
 
 st.subheader("Playground")
+st.markdown("#")
 col6,col7,col8 = st.columns(3)
+st.markdown("#")
 col1, col2, col3, col4_ = st.columns(4)
+st.markdown("#")
 col4,col5 = st.columns(2)
 
 customers, orders = st.tabs(["Customers", "Orders"])
+st.markdown("#")
 
 st.subheader("Evaluate Segments")
 with col6:
