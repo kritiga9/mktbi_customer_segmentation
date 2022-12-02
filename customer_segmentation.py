@@ -186,7 +186,7 @@ with st.expander("Existing segments"):
         value
 
 with st.expander("New segment"): 
-    segments_new = pd.DataFrame([["",n_past_purchases_low, n_past_purchases_high,n_days_since_order_low, n_days_since_order_high,consumer_basket_low,consumer_basket_high]],columns = ["General_Segment","recency_min","recency_max","n_purchases_min","n_purchases_max","order_val_min","order_val_max"])
+    segments_new = pd.DataFrame([["",n_purchases_min, n_purchases_max,recency_min, recency_max,order_val_min,order_val_max]],columns = ["General_Segment","n_purchases_min","n_purchases_max","recency_min","recency_max","order_val_min","order_val_max"])
     gd = GridOptionsBuilder.from_dataframe(segments_new)
     gd.configure_default_column(editable=True,groupable=True)
     gd.configure_selection(selection_mode="multiple", use_checkbox=True)
