@@ -47,9 +47,9 @@ def segment_f(row,segments):
 
 conn = init_connection()
 
-df_customers = run_query('SELECT * FROM "customers"')
-df_orders = run_query('SELECT * FROM "wine_orders" ORDER BY "order_date"')
-segments = run_query('SELECT * FROM "segments"')
+df_customers = run_query('SELECT * FROM "customers"', conn)
+df_orders = run_query('SELECT * FROM "wine_orders" ORDER BY "order_date"', conn)
+segments = run_query('SELECT * FROM "segments"', conn)
 
 df_customers.rename(columns={"days_since_last_purchase":"recency","average_order":"order_val"},inplace=True)
 # Create Lables for Each RFM Metric:Create generator of values for labels with range function
