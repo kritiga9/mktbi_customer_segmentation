@@ -9,23 +9,24 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import snowflake.connector
 
+client = Client(st.secrets.url, st.secrets.key)
 
-client = Client(st.secrets.url, st.secrets.key) 
+@st.experimental_singleton
+def init_connection():
+    return snowflake.connector.connect(**st.secrets["snowflake"])
 
 @st.experimental_memo(ttl=7200)
-def read_df(table_id, index_col=None, date_col=None):
-    client.tables.export_to_file(table_id, '.')
-    table_name = table_id.split(".")[-1]
+def execute_statement(sql, _conn):
+    with _conn.cursor() as cur:
+        cur.execute(sql)
 
-    return pd.read_csv(table_name, index_col=index_col, parse_dates=date_col)
-
-def read_df_segment(table_id, index_col=None, date_col=None):
-    client.tables.export_to_file(table_id, '.')
-    table_name = table_id.split(".")[-1]
-
-    return pd.read_csv(table_name, index_col=index_col, parse_dates=date_col)
-
+@st.experimental_memo(ttl=3600)
+def run_query(sql, _conn):
+    with _conn.cursor() as cur:
+        cur.execute(sql)
+        return cur.fetch_pandas_all()
 
 def saveFile(uploaded):
     with open(os.path.join(os.getcwd(),uploaded.name),"w") as f:
@@ -34,22 +35,22 @@ def saveFile(uploaded):
         return os.path.join(os.getcwd(),uploaded.name)
 
 
-
 def segment_f(row,segments):
     filter_1 = ((segments["order_val_min"]<=row["order_val"] )& (segments["order_val_max"]>=row["order_val"]))
     filter_2 = ((segments["recency_min"]<=row["recency"]) & (segments["recency_max"]>=row["recency"]))
-    filter_3 = ((segments["n_purchases_min"]<=row["n_purchases"]) & (segments["n_purchases_max"]>=row["n_purchases"])) 
+    filter_3 = ((segments["n_purchases_min"]<=row["n_purchases"]) & (segments["n_purchases_max"]>=row["n_purchases"]))
     value = (segments[ (filter_2) & (filter_1)  & (filter_3) ]["General_Segment"].unique())
     if value.size==0:
         return "No Segment"
     else:
         return (value[0])
 
+conn = init_connection()
 
+df_customers = run_query('SELECT * FROM "customers"')
+df_orders = run_query('SELECT * FROM "wine_orders" ORDER BY "order_date"')
+segments = run_query('SELECT * FROM "segments"')
 
-df_customers = read_df('in.c-wine.customers')
-df_orders = read_df('in.c-wine.wine_orders', date_col=["order_date"])
-segments = read_df_segment("out.c-create_segments.segments")
 df_customers.rename(columns={"days_since_last_purchase":"recency","average_order":"order_val"},inplace=True)
 # Create Lables for Each RFM Metric:Create generator of values for labels with range function
 df_customers["General_Segment"] = df_customers.apply(lambda x : segment_f(x, segments=segments),axis=1)
@@ -57,7 +58,7 @@ df_customers["General_Segment"] = df_customers.apply(lambda x : segment_f(x, seg
 main_header = '<p style="font-family:sans-serif; color:#121212; font-size: 36px;">Customer Segmentator</p>'
 st.markdown(main_header, unsafe_allow_html=True)
 st.markdown("#")
-col_1,col_2,col_3,col_4 = st.columns(4)    
+col_1,col_2,col_3,col_4 = st.columns(4)
 col_1.metric("Total Customers", df_customers.shape[0])
 col_2.metric("Average Order Value", f"${df_customers.order_val.mean():.0f}")
 col_3.metric("Average Number of Orders", f"{df_customers.n_purchases.mean():.0f}")
@@ -100,7 +101,7 @@ with col6:
     n_past_purchases_low, n_past_purchases_high = st.slider(
             'Number of orders',
             1, int(df_customers.n_purchases.max()), (1, int(df_customers.n_purchases.max())))
-    
+
 with col7:
     n_days_since_order_low, n_days_since_order_high = st.slider(
             'Number of days since last order',
@@ -152,7 +153,7 @@ with orders:
 st.markdown("Choose from the below options if you would like to edit existing segments or add new segments")
 
 
-with st.expander("Existing segments"): 
+with st.expander("Existing segments"):
     gd_1 = GridOptionsBuilder.from_dataframe(segments)
     gd_1.configure_default_column(editable=True,groupable=True)
     gd_1.configure_selection(selection_mode="multiple", use_checkbox=True)
@@ -168,12 +169,12 @@ with st.expander("Existing segments"):
     if sel_row_1.size:
         sel_row_1= sel_row_1[["General_Segment","recency_min","recency_max","n_purchases_min","n_purchases_max","order_val_min","order_val_max"]]
         sel_row_1.to_csv("test_1.csv",index=False)
-        
-        value = kb.keboola_create_update(keboola_URL=client.root_url, 
-                                    keboola_key=client._token, 
-                                    keboola_table_name="segments", 
-                                    keboola_bucket_id="out.c-create_segments", 
-                                    keboola_file_path="test_1.csv", 
+
+        value = kb.keboola_create_update(keboola_URL=client.root_url,
+                                    keboola_key=client._token,
+                                    keboola_table_name="segments",
+                                    keboola_bucket_id="out.c-create_segments",
+                                    keboola_file_path="test_1.csv",
                                     keboola_is_incremental = True,
                                     keboola_primary_key="segment_name",
                                     #Button Label
@@ -185,7 +186,7 @@ with st.expander("Existing segments"):
                                     )
         value
 
-with st.expander("New segment"): 
+with st.expander("New segment"):
     segments_new = pd.DataFrame([["",n_days_since_order_low, n_days_since_order_high,n_past_purchases_low, n_past_purchases_high,consumer_basket_low,consumer_basket_high]],columns = ["General_Segment","n_purchases_min","n_purchases_max","recency_min","recency_max","order_val_min","order_val_max"])
     gd = GridOptionsBuilder.from_dataframe(segments_new)
     gd.configure_default_column(editable=True,groupable=True)
@@ -202,11 +203,11 @@ with st.expander("New segment"):
     if sel_row.size:
         sel_row= sel_row[["General_Segment","recency_min","recency_max","n_purchases_min","n_purchases_max","order_val_min","order_val_max"]]
         sel_row.to_csv("test.csv",index=False)
-        value1 = kb.keboola_create_update(keboola_URL=client.root_url, 
-                                    keboola_key=client._token, 
-                                    keboola_table_name="segments", 
-                                    keboola_bucket_id="out.c-create_segments", 
-                                    keboola_file_path="test.csv", 
+        value1 = kb.keboola_create_update(keboola_URL=client.root_url,
+                                    keboola_key=client._token,
+                                    keboola_table_name="segments",
+                                    keboola_bucket_id="out.c-create_segments",
+                                    keboola_file_path="test.csv",
                                     keboola_is_incremental = True,
                                     keboola_primary_key="segment_name",
                                     #Button Label
@@ -217,4 +218,3 @@ with st.expander("New segment"):
                                     api_only=False
                                     )
         value1
-
