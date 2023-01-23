@@ -4,4 +4,3 @@ streamlit-keboola-api
 matplotlib
 seaborn
 kbcstorage@git+https://github.com/keboola/sapi-python-client.git@276bcebfc0224f89d8ec5e9dd0b94cc15a6596b9
--r https://raw.githubusercontent.com/snowflakedb/snowflake-connector-python/v2.7.9/tested_requirements/requirements_37.reqs
