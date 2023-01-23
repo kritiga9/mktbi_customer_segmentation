@@ -16,7 +16,8 @@ client = Client(st.secrets.url, st.secrets.key)
 @st.experimental_memo(ttl=7200)
 def read_df(table_id, index_col=None, date_col=None):
     table_name = table_id.split(".")[-1]
-    return pd.read_csv(input_dir+table_name, index_col=index_col, parse_dates=date_col)
+    path_name = input_dir+table_name+'.csv'
+    return pd.read_csv(path_name, index_col=index_col, parse_dates=date_col)
 
 def saveFile(uploaded):
     with open(os.path.join(os.getcwd(),uploaded.name),"w") as f:
