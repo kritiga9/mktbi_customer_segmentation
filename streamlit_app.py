@@ -10,14 +10,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-input_dir = '/data/input/tables/'
+input_dir = '/data/in/tables/'
 client = Client(st.secrets.url, st.secrets.key)
 
 @st.experimental_memo(ttl=7200)
-def read_df(table_id, index_col=None, date_col=None):
-    table_name = table_id.split(".")[-1]
-    path_name = input_dir+table_name+'.csv'
-    return pd.read_csv(path_name, index_col=index_col, parse_dates=date_col)
+def read_df(file_name, index_col=None, date_col=None):
+    return pd.read_csv(file_name, index_col=index_col, parse_dates=date_col)
 
 def saveFile(uploaded):
     with open(os.path.join(os.getcwd(),uploaded.name),"w") as f:
@@ -35,9 +33,9 @@ def segment_f(row,segments):
     else:
         return (value[0])
 
-df_customers = read_df('in.c-wine.customers')
-df_orders = read_df('in.c-wine.wine_orders', date_col=["order_date"])
-segments = read_df('out.c-create_segments.segments')
+df_customers = read_df('customers')
+df_orders = read_df('orders', date_col=["order_date"])
+segments = read_df('segments')
 
 df_customers.rename(columns={"days_since_last_purchase":"recency","average_order":"order_val"},inplace=True)
 # Create Lables for Each RFM Metric:Create generator of values for labels with range function
