@@ -11,7 +11,7 @@ import numpy as np
 import seaborn as sns
 
 input_dir = '/data/in/tables/'
-client = Client(st.secrets.url, st.secrets.key)
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 @st.experimental_memo(ttl=7200)
 def read_df(file_name, index_col=None, date_col=None):
