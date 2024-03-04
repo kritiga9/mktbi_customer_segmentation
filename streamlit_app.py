@@ -10,6 +10,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+st.set_page_config(
+    page_title="Customer Segmentation App",
+    page_icon="🧊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 input_dir = '/data/in/tables/'
 client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
